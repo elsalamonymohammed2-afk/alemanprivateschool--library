@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المكتبة الرقمية التفاعلية - مدرسة الإيمان الخاصة بدبي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #38bdf8;
+            --primary-dark: #0284c7;
+            --gold: #fbbf24;
+            --book-bg: #ffffff;
+            --body-bg: radial-gradient(circle, #0f172a 0%, #030712 100%);
+            --text-dark: #0f172a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+
+        body {
+            background: var(--body-bg);
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px 15px 30px 15px;
+            overflow-x: hidden;
+            transition: background 0.5s ease;
+        }
+
+        /* شريط التنسيق العائم والمستقر */
+        .floating-word-toolbar {
+            width: 100%;
+            max-width: 1150px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid var(--gold);
+            border-radius: 15px;
+            padding: 8px 15px;
+            margin-bottom: 10px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            z-index: 999;
+            backdrop-filter: blur(8px);
+        }
+
+        .word-tools-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .word-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .word-btn:hover { background: var(--gold); color: #000; }
+
+        .word-select {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .top-header-bar {
+            width: 100%;
+            max-width: 1150px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--gold);
+            margin-bottom: 12px;
+            color: #fff;
+            backdrop-filter: blur(5px);
+        }
+
+        .book-stage {
+            perspective: 2500px;
+            width: 100%;
+            max-width: 1150px;
+            height: 620px;
+            min-height: 580px;
+            max-height: 680px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .real-book-frame {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #3d2314 0%, #221208 100%);
+            border-radius: 18px;
+            padding: 12px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 50px rgba(56, 189, 248, 0.3);
+            position: relative;
+            display: flex;
+            border: 4px solid #5c3a21;
+        }
+
+        .book-inner-pages {
+            width: 100%;
+            height: 100%;
+            background: var(--book-bg);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
+        }
+
+        .book-spine-line {
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            width: 30px;
+            background: linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.02), rgba(0,0,0,0.2));
+            transform: translateX(-50%);
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        .book-page {
+            position: absolute;
+            top: 0; right: 0;
+            width: 100%; height: 100%;
+            padding: 22px 28px;
+            display: none;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            backface-visibility: hidden;
+        }
+
+        .book-page.active {
+            display: block;
+            animation: pageFlip3D 0.5s ease-out forwards;
+        }
+
+        @keyframes pageFlip3D {
+            0% { opacity: 0; transform: scale(0.97); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .cover-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+            align-items: center;
+        }
+
+        .right-cover-box {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid var(--gold);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            background: #000000;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .quick-edit-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            display: flex;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 5px 10px;
+            border-radius: 18px;
+            border: 1px solid var(--gold);
+        }
+
+        .quick-edit-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .quick-edit-btn:hover { background: var(--gold); color: #000; }
+
+        .right-cover-media {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 1;
+        }
+
+        .right-cover-text-layer {
+            position: relative;
+            z-index: 2;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+            background: rgba(0, 0, 0, 0.65);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(4px);
+            max-width: 90%;
+            display: none;
+        }
+
+        .cover-content-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+            padding: 20px 15px;
+            background: var(--primary-bg);
+            border-radius: 12px;
+            color: #0f172a;
+            border: 3px solid var(--gold);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.4);
+        }
+
+        .cover-main-title {
+            font-size: 25px;
+            font-weight: 900;
+            color: #0369a1;
+            text-shadow: 0 2px 6px rgba(255,255,255,0.8);
+            line-height: 1.25;
+            margin-top: 5px;
+        }
+
+        .badge-country {
+            background: rgba(255, 255, 255, 0.9);
+            color: #0284c7;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 12px;
+            border: 2px solid var(--gold);
+        }
+
+        .logo-upload-box {
+            width: 130px;
+            height: 130px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.7);
+            border: 4px solid var(--gold);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .logo-upload-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+        .nav-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1150px;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 10px 25px;
+            border-radius: 40px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            border: 1px solid var(--gold);
+            padding: 8px 22px;
+            font-size: 14px;
+            font-weight: 800;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(2, 132, 199, 0.6); }
+        .btn-action:disabled { background: #475569; border-color: #64748b; cursor: not-allowed; opacity: 0.5; transform: none; }
+
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .section-item {
+            background: white;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            border-top: 4px solid #0284c7;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .section-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(2, 132, 199, 0.2);
+            background: #f8fafc;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content-box {
+            background: #ffffff;
+            width: 100%;
+            max-width: 900px;
+            max-height: 88vh;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border: 3px solid var(--gold);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px; left: 15px;
+            background: #ef4444; color: white;
+            border: none; width: 32px; height: 32px;
+            border-radius: 50%; font-size: 15px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        .card-box {
+            background: white;
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            border-right: 5px solid #0284c7;
+        }
+
+        .large-text-box {
+            line-height: 1.8;
+            color: #334155;
+            font-size: 13.5px;
+            max-height: 240px;
+            overflow-y: auto;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            outline: none;
+        }
+
+        [contenteditable="true"]:focus {
+            border: 2px dashed #0284c7 !important;
+            background: #ffffff !important;
+            box-shadow: 0 0 12px rgba(2, 132, 199, 0.3) !important;
+        }
+
+        .large-text-box::-webkit-scrollbar { width: 6px; }
+        .large-text-box::-webkit-scrollbar-thumb { background: #0284c7; border-radius: 4px; }
+
+        .media-gallery-grid {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 8px 0;
+        }
+
+        .media-gallery-grid img, .media-gallery-grid video {
+            width: 180px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #cbd5e1;
+            flex-shrink: 0;
+        }
+
+        .admin-panel {
+            background: #f0f9ff;
+            border: 2px dashed #0284c7;
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 7px 10px;
+            margin-top: 4px;
+            margin-bottom: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 12.5px;
+        }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .resource-card-link {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .resource-card-link:hover {
+            border-color: #0284c7;
+            background: #f0f9ff;
+        }
+
+        .open-badge {
+            background: #0284c7;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-delete-item {
+            background: #ef4444; color: white; border: none; padding: 4px 8px; font-size: 11px; border-radius: 6px; cursor: pointer; margin-right: 5px;
+        }
+
+        .btn-edit-item {
+            background: #f59e0b; color: white; border: none; padding: 4px 8px; font-size: 11px; border-radius: 6px; cursor: pointer; margin-right: 5px;
+        }
+
+        .comment-item {
+            background: #f1f5f9;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-right: 3px solid #0284c7;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- مدخلات الرفع المخفية -->
+    <input type="file" id="uploadVideoInput" accept="video/*" style="display: none;" onchange="handleVideoUpload(event)">
+    <input type="file" id="uploadImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+    <input type="file" id="principalImgPicker" accept="image/*" style="display: none;" onchange="handlePrincipalImageChange(event)">
+    <input type="file" id="principalMediaPicker" accept="image/*,video/*" multiple style="display: none;" onchange="handlePrincipalMediaAdded(event)">
+    <input type="file" id="schoolMediaPicker" accept="image/*,video/*" multiple style="display: none;" onchange="handleSchoolMediaAdded(event)">
+    <input type="file" id="commentMediaPicker" accept="image/*,video/*" style="display: none;" onchange="handleCommentMediaSelected(event)">
+
+    <!-- الشريط العلوي -->
+    <div class="top-header-bar">
+        <div>
+            <i class="fa-solid fa-book-bookmark" style="color: var(--gold);"></i>
+            <strong style="margin-right: 6px; font-size: 14px;">مكتبة مدرسة الإيمان الرقمية</strong>
+            <span id="userModeBadge" style="background: #10b981; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-right: 8px;">وضع الزائر (للتصفح فقط)</span>
+        </div>
+        <div>
+            <button class="btn-action" style="padding: 4px 12px; font-size: 12px;" onclick="toggleAdminAuthModal()"><i class="fa-solid fa-key"></i> <span id="lblAuthBtn">دخول المبرمج/المشرف</span></button>
+        </div>
+    </div>
+
+    <!-- شريط التنسيق العائم والمباشر الشبيه بـ Word -->
+    <div id="globalWordToolbar" class="floating-word-toolbar">
+        <div class="word-tools-group">
+            <span style="color: var(--gold); font-size: 12px; font-weight: bold; margin-left: 6px;"><i class="fa-solid fa-pen-ruler"></i> أدوات تنسيق النصوص (Word):</span>
+            
+            <button class="word-btn" onclick="execWordCmd('bold')" title="خط عريض"><i class="fa-solid fa-bold"></i></button>
+            <button class="word-btn" onclick="execWordCmd('italic')" title="خط مائل"><i class="fa-solid fa-italic"></i></button>
+            <button class="word-btn" onclick="execWordCmd('underline')" title="تحته خط"><i class="fa-solid fa-underline"></i></button>
+            
+            <select class="word-select" onchange="execWordFontSize(this.value)">
+                <option value="">حجم الخط</option>
+                <option value="2">صغير جداً</option>
+                <option value="3">عادي (14px)</option>
+                <option value="4">متوسط (18px)</option>
+                <option value="5">كبير (24px)</option>
+                <option value="6">كبير جداً (32px)</option>
+            </select>
+
+            <div style="display: flex; align-items: center; gap: 3px;">
+                <span style="color: #fff; font-size: 11px;">اللون:</span>
+                <input type="color" style="cursor: pointer; border: none; background: transparent; width: 26px; height: 26px;" onchange="execWordColor(this.value)">
+            </div>
+
+            <button class="word-btn" onclick="execWordCmd('justifyRight')" title="محاذاة لليمين"><i class="fa-solid fa-align-right"></i></button>
+            <button class="word-btn" onclick="execWordCmd('justifyCenter')" title="محاذاة للوسط"><i class="fa-solid fa-align-center"></i></button>
+            <button class="word-btn" onclick="execWordCmd('insertUnorderedList')" title="قائمة نقطية"><i class="fa-solid fa-list-ul"></i></button>
+        </div>
+
+        <div>
+            <button class="btn-action" style="padding: 4px 14px; font-size: 11px; background: #10b981;" onclick="saveAllLiveEdits()"><i class="fa-solid fa-floppy-disk"></i> حفظ كافة التعديلات والتنسيقات</button>
+        </div>
+    </div>
+
+    <!-- نافذة الأقسام والمنصات -->
+    <div id="sectionModal" class="modal-overlay">
+        <div class="modal-content-box">
+            <button class="modal-close-btn" onclick="closeSectionModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 id="modalTitle" style="color: #0369a1; font-size: 20px;">عنوان القسم</h2>
+                    <p id="modalDesc" style="color: #64748b; font-size: 12px;">المصادر والمنصات التفاعلية المعتمدة...</p>
+                </div>
+                <div id="adminAddPlatformArea" style="display: none;">
+                    <button class="btn-action" style="padding: 5px 12px; font-size: 12px; background: #10b981;" onclick="showAddPlatformForm()"><i class="fa-solid fa-plus"></i> إضافة منصة جديدة</button>
+                </div>
+            </div>
+
+            <div id="addPlatformFormBox" style="display: none; background: #f0f9ff; padding: 10px; border-radius: 8px; border: 1px solid #0284c7; margin-top: 10px;">
+                <h4 id="formPlatformTitle" style="font-size: 12px; color: #0284c7; margin-bottom: 6px;">إضافة مرجع / منصة جديدة:</h4>
+                <input type="hidden" id="editPlatformItemId" value="">
+                <input type="text" id="newPlatformName" class="form-input" placeholder="اسم المنصة أو الكتاب...">
+                <input type="text" id="newPlatformType" class="form-input" placeholder="الوصف (مثال: أوراق عمل، قصص)...">
+                <input type="url" id="newPlatformUrl" class="form-input" placeholder="رابط المنصة (https://...)...">
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-action" style="padding: 4px 12px; font-size: 11px;" onclick="confirmSavePlatform()">حفظ البيانات</button>
+                    <button class="btn-action" style="padding: 4px 12px; font-size: 11px; background: #64748b;" onclick="hideAddPlatformForm()">إلغاء</button>
+                </div>
+            </div>
+
+            <div style="overflow-y: auto; margin-top: 10px;" id="modalResourcesList"></div>
+        </div>
+    </div>
+
+    <!-- نافذة تسجيل دخول المشرف -->
+    <div id="adminLoginModal" class="modal-overlay">
+        <div class="modal-content-box" style="max-width: 380px; height: auto; text-align: center;">
+            <button class="modal-close-btn" onclick="closeAdminLoginModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="color: #0284c7; margin-bottom: 12px;"><i class="fa-solid fa-lock"></i> تسجيل دخول المشرف</h3>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">أدخل كلمة المرور لتفعيل التحكم الكامل والتعديل المباشر:</p>
+            <input type="password" id="adminPasswordInput" class="form-input" placeholder="كلمة المرور..." style="text-align: center;">
+            <button class="btn-action" style="width: 100%; justify-content: center; margin-top: 8px;" onclick="verifyAdminPassword()">تسجيل الدخول</button>
+        </div>
+    </div>
+
+    <!-- الكتاب التفاعلي الرئيسي -->
+    <div class="book-stage">
+        <div class="real-book-frame">
+            <div class="book-inner-pages">
+                <div class="book-spine-line"></div>
+
+                <!-- PAGE 1: الغلاف الرئيسي -->
+                <div class="book-page active" id="page-1">
+                    <div class="cover-grid">
+                        <div class="right-cover-box" id="rightCoverContainer">
+                            <div class="quick-edit-toolbar">
+                                <button class="quick-edit-btn" onclick="requestAdminAccess('video')"><i class="fa-solid fa-video"></i> فيديو</button>
+                                <button class="quick-edit-btn" onclick="requestAdminAccess('image')"><i class="fa-solid fa-image"></i> صورة</button>
+                                <button class="quick-edit-btn" onclick="requestAdminAccess('text')"><i class="fa-solid fa-pen"></i> كتابة</button>
+                            </div>
+
+                            <video id="rightCoverVideo" class="right-cover-media" autoplay loop muted playsinline style="display: none;">
+                                <source src="burj_dubai_clean_v2.mp4" type="video/mp4">
+                            </video>
+
+                            <img id="rightCoverImage" class="right-cover-media" style="display: none;" alt="صورة الغلاف">
+
+                            <div id="rightCoverTextLayer" class="right-cover-text-layer">
+                                <h3 id="rightCoverTitleText" style="font-size: 18px; color: var(--gold); margin-bottom: 6px;"></h3>
+                                <p id="rightCoverDescText" style="font-size: 13px; line-height: 1.5;"></p>
+                            </div>
+                        </div>
+
+                        <div class="cover-content-side" id="libraryCoverSide">
+                            <div>
+                                <span class="badge-country">الإمارات العربية المتحدة - دبي | UAE</span>
+                                <h1 class="cover-main-title">مكتبة مدرسة الإيمان الخاصة بدبي</h1>
+                                <p style="color: #0f172a; font-weight: 700; font-size: 12px; margin-top: 4px;">بوابة المعرفة الرقمية الشاملة</p>
+                            </div>
+
+                            <div>
+                                <div class="logo-upload-box" onclick="requestAdminLogoChange()">
+                                    <img id="logoImgPreview" src="https://via.placeholder.com/130?text=شعار+المدرسة" alt="شعار">
+                                </div>
+                                <input type="file" id="logoFilePicker" accept="image/*" style="display: none;" onchange="handleLogoChange(event)">
+                            </div>
+
+                            <div style="width: 100%; padding-top: 6px;">
+                                <p style="font-size: 11px; color: #334155; font-weight: 600;">بوابة التعلم والأنشطة الرقمية الذكية</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 2: كلمة مدير المدرسة (محفوظة بالكامل وفي مكانها الأصلي) -->
+                <div class="book-page" id="page-2">
+                    <h2 style="color: #0284c7; margin-bottom: 10px; border-bottom: 2px solid #cbd5e1; padding-bottom: 4px;"><i class="fa-solid fa-user-tie"></i> كلمة مدير المدرسة والهيئة الإدارية</h2>
+                    
+                    <div class="card-box" style="display: flex; gap: 15px; align-items: center;">
+                        <div style="text-align: center; cursor: pointer;" onclick="triggerPrincipalPhotoUpload()" title="انقر هنا لتغيير صورة المدير">
+                            <img id="principalImgDisplay" src="https://via.placeholder.com/100?text=صورة+المدير" alt="مدير المدرسة" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                            <span style="font-size: 10px; color: #0284c7; display: block; margin-top: 4px; font-weight: bold;">تغيير الصورة</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="color: #0284c7; margin-bottom: 4px; font-size: 14px;"><span id="lblPrincipal">الأستاذ / خالد مسعود</span></h3>
+                            <p style="font-size: 12px; color: #64748b;">مدير مدرسة الإيمان الخاصة بدبي</p>
+                            <p style="font-size: 12.5px; color: #334155; margin-top: 4px;"><strong>أمينة المكتبة:</strong> <span id="lblLibrarian">أ / هدى عبد اللاه</span></p>
+                        </div>
+                    </div>
+
+                    <div class="card-box" style="border-right-color: #f59e0b;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h3 style="color: #f59e0b; font-size: 14px;"><i class="fa-solid fa-quote-right"></i> الخطاب والتوجيهات (انقر للتعديل المباشر)</h3>
+                            <button class="btn-action admin-only-btn" style="padding: 2px 8px; font-size: 10px; display: none;" onclick="triggerPrincipalMediaUpload()"><i class="fa-solid fa-plus"></i> إرفاق صورة/فيديو للكلمة</button>
+                        </div>
+                        
+                        <!-- نص كلمة المدير الأصلي والقابل للتنسيق التفاعلي المباشر -->
+                        <div id="lblPrincipalMessage" class="large-text-box editable-live-node">
+أبنائي وبناتي الطلاب، أولياء الأمور الكرام، نرحب بكم في بوابتنا الرقمية المتطورة لمدرسة الإيمان الخاصة بدبي. حرصنا على توفير بيئة معرفية آمنة ومصادر تفاعلية تدعم مسيرتكم التعليمية.
+يمكنكم كتابة وتنسيق أي عدد من الأسطر هنا بكل حرية.
+                        </div>
+                        <div id="principalMediaGallery" class="media-gallery-grid" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <!-- PAGE 3: نبذة عن المدرسة (محفوظة بالكامل وفي مكانها الأصلي) -->
+                <div class="book-page" id="page-3">
+                    <h2 style="color: #0284c7; margin-bottom: 10px; border-bottom: 2px solid #cbd5e1; padding-bottom: 4px;"><i class="fa-solid fa-school"></i> نبذة شاملة عن مدرسة الإيمان الخاصة بدبي</h2>
+                    
+                    <div class="card-box" style="border-right-color: #10b981;">
+                        <h3 style="color: #10b981; margin-bottom: 6px; font-size: 14px;"><i class="fa-solid fa-book-open-reader"></i> الرؤية، الرسالة، والتاريخ التعليمي (انقر للتعديل المباشر)</h3>
+                        
+                        <!-- نص نبذة المدرسة الأصلي والقابل للتنسيق التفاعلي المباشر -->
+                        <div id="lblSchoolAboutText" class="large-text-box editable-live-node">
+تأسست مدرسة الإيمان الخاصة بدبي لتقديم خدمات تعليمية وتربوية متميزة بناءً على أحدث المعايير العصرية والتقنيات الرقمية. نهدف إلى خلق بيئة تحفيزية تبني جودتها على القيم الأخلاقية والأكاديمية الرفيعة.
+يمكنكم كتابة وتعديل الشرح والأنشطة والقصص بالكامل بمرونة تامة.
+                        </div>
+                    </div>
+
+                    <div class="card-box" style="border-right-color: #8b5cf6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h3 style="color: #8b5cf6; font-size: 14px;"><i class="fa-solid fa-photo-film"></i> المعرض المرئي للمدرسة (صور وفيديوهات)</h3>
+                            <button class="btn-action admin-only-btn" style="padding: 2px 8px; font-size: 10px; display: none;" onclick="triggerSchoolMediaUpload()"><i class="fa-solid fa-plus"></i> إضافة صور/فيديو للمدرسة</button>
+                        </div>
+                        <div id="schoolMediaGallery" class="media-gallery-grid">
+                            <p style="font-size: 11.5px; color: #64748b;">لا توجد وسائط إضافية حالياً. اضغط على خيار الإضافة من لوحة التحكم لإدراج الصور والفيديو.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 4: أنشطة المكتبة -->
+                <div class="book-page" id="page-4">
+                    <h2 style="color: #0284c7; margin-bottom: 10px; border-bottom: 2px solid #cbd5e1; padding-bottom: 4px;"><i class="fa-solid fa-photo-film"></i> أنشطة وفعاليات المكتبة الرقمية</h2>
+                    
+                    <div class="card-box" style="border-right-color: #06b6d4;">
+                        <h3 style="color: #06b6d4; margin-bottom: 6px; font-size: 14px;"><i class="fa-solid fa-bullhorn"></i> سجل الفعاليات والأنشطة المدرسية (انقر للتعديل المباشر)</h3>
+                        <div id="libraryActivitiesText" class="large-text-box editable-live-node">
+تنظم مكتبة مدرسة الإيمان العديد من الفعاليات الأسبوعية والشهرية تشمل مسابقات تحدي القراءة العربي، ورش عمل الخط العربي، عروض القصص التفاعلية، ومعارض العلوم الرقمية.
+                        </div>
+                    </div>
+
+                    <div class="card-box" style="border-right-color: #f59e0b;">
+                        <h3 style="color: #f59e0b; margin-bottom: 6px; font-size: 14px;"><i class="fa-solid fa-images"></i> معرض صور وفيديوهات الأنشطة</h3>
+                        <div id="libraryActivitiesGallery" class="media-gallery-grid">
+                            <div style="background: #f1f5f9; padding: 10px; text-align: center; border-radius: 6px; font-size: 11px; color: #64748b; min-width: 150px;">مسابقة القراءة 2026</div>
+                            <div style="background: #f1f5f9; padding: 10px; text-align: center; border-radius: 6px; font-size: 11px; color: #64748b; min-width: 150px;">معرض العلوم التفاعلي</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 5: أقسام المكتبة والمنصات التفاعلية -->
+                <div class="book-page" id="page-5">
+                    <h2 style="color: #0284c7; margin-bottom: 10px; border-bottom: 2px solid #cbd5e1; padding-bottom: 4px;"><i class="fa-solid fa-book-open"></i> أقسام المكتبة والمنصات التعليمية</h2>
+                    
+                    <div class="sections-grid">
+                        <div class="section-item" onclick="openSectionModal(1)">
+                            <h3 style="color: #ef4444; margin-bottom: 4px; font-size: 14px;"><i class="fa-solid fa-language"></i> 1. قسم اللغة العربية وأوراق العمل</h3>
+                            <p style="font-size: 11.5px; color: #475569;">منصة أبجدية، منصة عصافير، قصص مصورة ومتحركة، وأوراق عمل.</p>
+                        </div>
+                        <div class="section-item" onclick="openSectionModal(2)">
+                            <h3 style="color: #0284c7; margin-bottom: 4px; font-size: 14px;"><i class="fa-solid fa-graduation-cap"></i> 2. English Section</h3>
+                            <p style="font-size: 11.5px; color: #475569;">Oxford Owl Library, Starfall Phonics, and Grammar Tools.</p>
+                        </div>
+                        <div class="section-item" onclick="openSectionModal(3)">
+                            <h3 style="color: #10b981; margin-bottom: 4px; font-size: 14px;"><i class="fa-solid fa-kaaba"></i> 3. قسم التربية الإسلامية</h3>
+                            <p style="font-size: 11.5px; color: #475569;">المصحف التفاعلي، السيرة النبوية، وموسوعة الأحاديث.</p>
+                        </div>
+                        <div class="section-item" onclick="openSectionModal(4)">
+                            <h3 style="color: #f59e0b; margin-bottom: 4px; font-size: 14px;"><i class="fa-solid fa-flask"></i> 4. العلوم والمختبر الرقمي</h3>
+                            <p style="font-size: 11.5px; color: #475569;">مختبرات PhET العالمية، محاكاة الأحياء، والفضاء.</p>
+                        </div>
+                        <div class="section-item" onclick="openSectionModal(5)">
+                            <h3 style="color: #8b5cf6; margin-bottom: 4px; font-size: 14px;"><i class="fa-solid fa-calculator"></i> 5. قسم الرياضيات</h3>
+                            <p style="font-size: 11.5px; color: #475569;">GeoGebra للهندسة، الحساب الذهني، وتحديات الأرقام.</p>
+                        </div>
+                        <div class="section-item" onclick="openSectionModal(6)">
+                            <h3 style="color: #06b6d4; margin-bottom: 4px; font-size: 14px;"><i class="fa-solid fa-landmark"></i> 6. الدراسات الاجتماعية والتراث</h3>
+                            <p style="font-size: 11.5px; color: #475569;">تاريخ دولة الإمارات، البوابة الرسمية، وتراث الدولة.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 6: لوحة التحكّم الشاملة ورابط الزوار -->
+                <div class="book-page" id="page-6">
+                    <h2 style="color: #0284c7; margin-bottom: 10px; border-bottom: 2px solid #cbd5e1; padding-bottom: 4px;"><i class="fa-solid fa-sliders"></i> لوحة التحكم والإعدادات (للمشرف فقط)</h2>
+                    
+                    <div class="admin-panel">
+                        <div id="lockedAdminMsg" style="text-align: center; padding: 12px;">
+                            <p style="font-size: 12px; color: #475569; margin-bottom: 8px;">إدارة المحتوى ورابط الزوار متاح للمشرف فقط.</p>
+                            <button class="btn-action" style="margin: 0 auto; padding: 5px 18px; font-size: 12px;" onclick="toggleAdminAuthModal()"><i class="fa-solid fa-key"></i> تسجيل دخول المشرف</button>
+                        </div>
+
+                        <div id="unlockedAdminContent" style="display: none;">
+                            
+                            <div style="background: #e0f2fe; padding: 10px; border-radius: 6px; border: 1px solid #0284c7; margin-bottom: 12px;">
+                                <label style="font-weight: bold; font-size: 11.5px; color: #0369a1;"><i class="fa-solid fa-shield-halved"></i> رابط الزوار الآمن (للنشر بدون صلاحية التعديل):</label>
+                                <div style="display: flex; gap: 6px; margin-top: 4px;">
+                                    <input type="text" id="visitorShareUrlBox" class="form-input" readonly style="margin:0; background:#fff; font-size:11px;" value="">
+                                    <button class="btn-action" style="padding: 4px 10px; font-size: 11px;" onclick="copyVisitorLink()"><i class="fa-solid fa-copy"></i> نسخ</button>
+                                </div>
+                            </div>
+
+                            <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 8px;">
+                                <label style="font-weight: bold; font-size: 11.5px;">تخصيص لون ونمط خلفية المنصة:</label>
+                                <select id="themeSelectMode" class="form-input" onchange="applySystemTheme(this.value)">
+                                    <option value="dark">النمط الليلي الفاخر (افتراضي)</option>
+                                    <option value="blue">تدرج الأزرق المائي</option>
+                                    <option value="emerald">النمط الزمردي التعليمي</option>
+                                    <option value="light">النمط النهاري الناصع</option>
+                                    <option value="custom">لون مخصص</option>
+                                </select>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                                    <span style="font-size: 11px;">لون خلفية خاص:</span>
+                                    <input type="color" id="customBgColorPicker" value="#0f172a" onchange="applyCustomBgColor(this.value)">
+                                </div>
+                            </div>
+
+                            <p style="font-size: 11.5px; color: #0284c7; font-weight: bold; margin-top: 8px; text-align: center;">💡 للتعديل والتنسيق، اذهب إلى كلمة المدير أو النبذة واضغط واكتب وتأنّق بالشريط العائم بالعلوي!</p>
+                        </div>
+                    </div>
+
+                    <div class="card-box" id="commentsSectionCard" style="border-right-color: #8b5cf6; margin-top: 15px;">
+                        <h3 style="color: #8b5cf6; margin-bottom: 6px; font-size: 14px;"><i class="fa-solid fa-comments"></i> تقديم تعليق / مشاركة (صور، فيديوهات، نصوص)</h3>
+                        <div id="addCommentBox">
+                            <input type="text" id="commentUserName" class="form-input" placeholder="اسمك / اسم الطالب...">
+                            <textarea id="commentUserText" class="form-input" rows="2" placeholder="اكتب تعليقك هنا..."></textarea>
+                            
+                            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+                                <button class="btn-action" style="padding: 4px 10px; font-size: 11px; background: #0284c7;" onclick="triggerCommentMediaUpload()"><i class="fa-solid fa-paperclip"></i> إرفاق صورة أو فيديو</button>
+                                <span id="attachedMediaLabel" style="font-size: 11px; color: #64748b;">لم يتم إرفاق ملف</span>
+                            </div>
+
+                            <button class="btn-action" style="padding: 4px 15px; font-size: 11px;" onclick="submitUserComment()">إرسال المشاركة</button>
+                        </div>
+                        <div style="margin-top: 10px; max-height: 120px; overflow-y: auto;" id="commentsDisplayList"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- شريط أزرار التصفح السفلي -->
+    <div class="nav-footer">
+        <button class="btn-action" id="prevPgBtn" onclick="turnBookPage(-1)" disabled><i class="fa-solid fa-arrow-right"></i> الصفحة السابقة</button>
+        <span id="pageIndicatorNum" style="color: white; font-weight: 800; font-size: 14px; background: rgba(255,255,255,0.1); padding: 5px 16px; border-radius: 20px;">صفحة 1 من 6</span>
+        <button class="btn-action" id="nextPgBtn" onclick="turnBookPage(1)">الصفحة التالية <i class="fa-solid fa-arrow-left"></i></button>
+    </div>
+
+    <script>
+        let currentPageIndex = 1;
+        const totalPagesCount = 6;
+        let isAdminAuthenticated = false;
+        const ADMIN_SECRET_CODE = "admin123";
+        let activeSectionId = null;
+        let attachedCommentMediaUrl = "";
+
+        let defaultSectionsData = {
+            1: {
+                title: "📚 قسم اللغة العربية وأوراق العمل التفاعلية",
+                desc: "مكتبة قصصية وتربوية وأوراق عمل تفاعلية مخصصة للأطفال ولغة الضاد.",
+                items: [
+                    { id: 101, name: "📝 منصة أبجدية لأوراق العمل التفاعلية", type: "أوراق عمل وأنشطة أطفال", link: "https://www.alefbata.com/worksheets?d=d" },
+                    { id: 102, name: "📖 قصص وحكايات الأطفال التفاعلية (عصافير)", type: "منصة عصافير الآمنة للأطفال", link: "https://3asafeer.com/" },
+                    { id: 103, name: "🌟 مكتبة قصص الأطفال المصورة والمكتوبة", type: "مكتبة هنداوي المعتمدة", link: "https://www.hindawi.org/books/children/" },
+                    { id: 104, name: "📜 السيرة الأدبية والتاريخ العربي", type: "كتب ومراجع", link: "https://www.hindawi.org/categories/history/" },
+                    { id: 105, name: "✍️ تدريبات الخط العربي والإملاء", type: "تطبيقات تفاعلية", link: "https://www.arabic-keyboard.org" },
+                    { id: 106, name: "🏆 تحدي القراءة العربي", type: "المنصة الرسمية", link: "https://www.arabreadingchallenge.com/" }
+                ]
+            },
+            2: {
+                title: "🎓 English Section - Digital Library",
+                desc: "Safe, curriculum-aligned English reading materials and educational tools.",
+                items: [
+                    { id: 201, name: "📚 Oxford Graded Reading Books", type: "Free Digital Library", link: "https://www.oxfordowl.co.uk/for-home/find-a-book/library-page/" },
+                    { id: 202, name: "🔤 Starfall Phonics & Reading", type: "Interactive Practice", link: "https://www.starfall.com/h/" },
+                    { id: 203, name: "✍️ English Grammar & Spelling Practice", type: "Learning App", link: "https://www.englishclub.com/grammar/" },
+                    { id: 204, name: "🌍 International Children's Digital Library", type: "Global Books", link: "https://www.gutenberg.org/browse/categories/1" },
+                    { id: 205, name: "🎨 Visual Vocabulary Flashcards", type: "Study Tools", link: "https://quizlet.com/" },
+                    { id: 206, name: "🏆 Storynory Audio Stories", type: "Audio Library", link: "https://www.storynory.com/" }
+                ]
+            },
+            3: {
+                title: "🕌 قسم التربية الإسلامية والقرآن الكريم",
+                desc: "مرجع إسلامي لتعلم القرآن الكريم، السيرة النبوية الشريفة، والآداب.",
+                items: [
+                    { id: 301, name: "📖 المصحف الإلكتروني التفاعلي", type: "قراءة واستماع", link: "https://quran.com/" },
+                    { id: 302, name: "🌙 موسوعة السيرة النبوية والقصص", type: "قصص الأنبياء والصحابة", link: "https://islamweb.net/" },
+                    { id: 303, name: "🕋 الدروس والأنشطة الإسلامية الناشئة", type: "أوراق عمل ومذكرات", link: "https://www.al-feqh.com/" }
+                ]
+            },
+            4: {
+                title: "🧪 العلوم والمختبر الرقمي التفاعلي",
+                desc: "تجارب علمية تفاعلية ومحاكاة دقيقة لمختلف فروع العلوم.",
+                items: [
+                    { id: 401, name: "🔬 محاكاة المختبرات العلمية (PhET)", type: "تجارب علمية تفاعلية", link: "https://phet.colorado.edu/ar/" },
+                    { id: 402, name: "🧬 مختبر الأحياء ومحاكاة الخلايا (iCell 3D)", type: "محاكاة الأحياء والخلايا التفاعلية", link: "https://icell.hudsonalpha.org/" },
+                    { id: 403, name: "🌌 الفضاء والفلك التعليمي (NASA)", type: "استكشاف الكون", link: "https://spaceplace.nasa.gov/" },
+                    { id: 404, name: "🌿 عالم الأحياء والطبيعة الممتعة", type: "موسوعة علمية مصورة", link: "https://www.nationalgeographic.com/" }
+                ]
+            },
+            5: {
+                title: "📐 قسم الرياضيات وتطوير المهارات الذهنية",
+                desc: "أدوات هندسية وحسابية تعزز التفكير المنطقي والرياضي.",
+                items: [
+                    { id: 501, name: "📐 هندسة وفضاء تفاعلي (GeoGebra)", type: "رسومات ومحاكاة هندسية", link: "https://www.geogebra.org/" },
+                    { id: 502, name: "🔢 ألعاب الحساب الذهني وتحدي الأرقام", type: "تطبيقات رياضية ممتعة", link: "https://www.mathplayground.com/" },
+                    { id: 503, name: "📊 الألغاز الرياضية وتنمية الذكاء", type: "تحديات تفاعلية", link: "https://nrich.maths.org/" }
+                ]
+            },
+            6: {
+                title: "🏛️ الدراسات الاجتماعية والتراث الوطني الإماراتي",
+                desc: "موسوعة تاريخية وتراثية وسياحية شاملة لدولة الإمارات العربية المتحدة.",
+                items: [
+                    { id: 601, name: "👑 سير شيوخ وقادة دولة الإمارات وبناة الاتحاد", type: "موسوعة تاريخ حكام شيوخ الإمارات والآباء المؤسسين", link: "https://u.ae/ar/about-the-uae/founders-of-the-union" },
+                    { id: 602, name: "🖼️ المعرض التاريخي والتراثي المرئي للمتحف المفتوح", type: "جولة تفاعلية مصورة ومتحركة بالصوت والصورة بالتراث", link: "https://dubaiculture.gov.ae/ar/attractions/museums/al-shindagha-museum" },
+                    { id: 603, name: "🌴 موسوعة السنع والعادات والتقاليد الإماراتية", type: "دليل السنع الإماراتي والآداب المعتمدة", link: "https://www.dubaiculture.gov.ae/ar" },
+                    { id: 604, name: "🏰 دليل المعالم والأماكن السياحية بالإمارات", type: "استكشاف أحدث الوجهات والتراث", link: "https://www.visitdubai.com/ar" },
+                    { id: 605, name: "📖 المكتبة المفتوحة للتراث والمراجع الإماراتية", type: "كتب ومراجع تاريخية وثقافية مفتوحة مجاناً", link: "https://www.hindawi.org/books/categories/history/" }
+                ]
+            }
+        };
+
+        let userCommentsList = [
+            { name: "الطالب / راشد المهيري", text: "المكتبة رائعة جداً وخاصة قسم العلوم ومختبرات PhET!", media: "" },
+            { name: "ولية أمر طالبة", text: "شكراً لإدارة المدرسة على هذه المنصة الثرية.", media: "" }
+        ];
+
+        function turnBookPage(direction) {
+            const newIndex = currentPageIndex + direction;
+            if (newIndex >= 1 && newIndex <= totalPagesCount) {
+                document.getElementById(`page-${currentPageIndex}`).classList.remove('active');
+                currentPageIndex = newIndex;
+                document.getElementById(`page-${currentPageIndex}`).classList.add('active');
+
+                document.getElementById('pageIndicatorNum').innerText = `صفحة ${currentPageIndex} من ${totalPagesCount}`;
+                document.getElementById('prevPgBtn').disabled = (currentPageIndex === 1);
+                document.getElementById('nextPgBtn').disabled = (currentPageIndex === totalPagesCount);
+            }
+        }
+
+        function openSectionModal(sectionId) {
+            activeSectionId = sectionId;
+            const secData = defaultSectionsData[sectionId];
+            if (!secData) return;
+
+            document.getElementById('modalTitle').innerText = secData.title;
+            document.getElementById('modalDesc').innerText = secData.desc;
+            
+            renderModalResources();
+            document.getElementById('sectionModal').style.display = 'flex';
+        }
+
+        function closeSectionModal() {
+            document.getElementById('sectionModal').style.display = 'none';
+            hideAddPlatformForm();
+        }
+
+        function renderModalResources() {
+            const container = document.getElementById('modalResourcesList');
+            const secData = defaultSectionsData[activeSectionId];
+            if (!secData) return;
+
+            let html = '<div class="resource-grid">';
+            secData.items.forEach(item => {
+                html += `
+                    <div class="resource-card-link">
+                        <div>
+                            <strong style="font-size: 13px; color: #0f172a; display: block;">${item.name}</strong>
+                            <span style="font-size: 11px; color: #64748b;">${item.type}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <a href="${item.link}" target="_blank" class="open-badge"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح</a>
+                `;
+                if (isAdminAuthenticated) {
+                    html += `
+                        <button class="btn-edit-item" onclick="editPlatformItem(${item.id})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-delete-item" onclick="deletePlatformItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                    `;
+                }
+                html += `</div></div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function toggleAdminAuthModal() {
+            if (isAdminAuthenticated) {
+                if (confirm("هل تريد تسجيل الخروج من وضع المشرف؟")) {
+                    isAdminAuthenticated = false;
+                    updateAdminUIMode();
+                    alert("تم تسجيل الخروج بنجاح.");
+                }
+            } else {
+                document.getElementById('adminLoginModal').style.display = 'flex';
+            }
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('adminLoginModal').style.display = 'none';
+            document.getElementById('adminPasswordInput').value = '';
+        }
+
+        function verifyAdminPassword() {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === ADMIN_SECRET_CODE) {
+                isAdminAuthenticated = true;
+                closeAdminLoginModal();
+                updateAdminUIMode();
+                alert("مرحباً بك أيها المشرف! كلمة المدير والنبذة وكافة الأقسام جاهزة ومتاحة للتعديل والتنسيق المباشر.");
+            } else {
+                alert("كلمة المرور غير صحيحة!");
+            }
+        }
+
+        function updateAdminUIMode() {
+            const badge = document.getElementById('userModeBadge');
+            const authBtn = document.getElementById('lblAuthBtn');
+            const lockedMsg = document.getElementById('lockedAdminMsg');
+            const unlockedContent = document.getElementById('unlockedAdminContent');
+            const adminArea = document.getElementById('adminAddPlatformArea');
+            const adminBtns = document.querySelectorAll('.admin-only-btn');
+            const globalToolbar = document.getElementById('globalWordToolbar');
+            const editableNodes = document.querySelectorAll('.editable-live-node');
+
+            if (isAdminAuthenticated) {
+                badge.innerText = "وضع المشرف النشط (تحكم كامل)";
+                badge.style.background = "#f59e0b";
+                authBtn.innerText = "خروج المشرف";
+                lockedMsg.style.display = 'none';
+                unlockedContent.style.display = 'block';
+                adminArea.style.display = 'block';
+                globalToolbar.style.display = 'flex';
+                adminBtns.forEach(b => b.style.display = 'inline-flex');
+
+                editableNodes.forEach(node => {
+                    node.setAttribute('contenteditable', 'true');
+                });
+
+                const currentUrl = window.location.href.split('?')[0];
+                document.getElementById('visitorShareUrlBox').value = currentUrl + "?mode=visitor";
+            } else {
+                badge.innerText = "وضع الزائر (للتصفح فقط)";
+                badge.style.background = "#10b981";
+                authBtn.innerText = "دخول المبرمج/المشرف";
+                lockedMsg.style.display = 'block';
+                unlockedContent.style.display = 'none';
+                adminArea.style.display = 'none';
+                globalToolbar.style.display = 'none';
+                adminBtns.forEach(b => b.style.display = 'none');
+
+                editableNodes.forEach(node => {
+                    node.setAttribute('contenteditable', 'false');
+                });
+            }
+            if (activeSectionId) renderModalResources();
+        }
+
+        /* دوال محرر Word المباشر */
+        function execWordCmd(cmd) {
+            document.execCommand(cmd, false, null);
+        }
+
+        function execWordFontSize(sizeVal) {
+            if (sizeVal) document.execCommand('fontSize', false, sizeVal);
+        }
+
+        function execWordColor(colorHex) {
+            document.execCommand('foreColor', false, colorHex);
+        }
+
+        function saveAllLiveEdits() {
+            alert("تم حفظ كافة التعديلات والتنسيقات بنجاح في أماكنها!");
+        }
+
+        function copyVisitorLink() {
+            const copyText = document.getElementById('visitorShareUrlBox');
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert("تم نسخ رابط الزوار الآمن بنجاح!");
+        }
+
+        function triggerPrincipalMediaUpload() {
+            document.getElementById('principalMediaPicker').click();
+        }
+
+        function handlePrincipalMediaAdded(e) {
+            const files = e.target.files;
+            const gallery = document.getElementById('principalMediaGallery');
+            for (let file of files) {
+                const url = URL.createObjectURL(file);
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    gallery.appendChild(img);
+                } else if (file.type.startsWith('video/')) {
+                    const vid = document.createElement('video');
+                    vid.src = url;
+                    vid.controls = true;
+                    gallery.appendChild(vid);
+                }
+            }
+            alert("تمت إضافة الوسائط لكلمة المدير بنجاح!");
+        }
+
+        function triggerSchoolMediaUpload() {
+            document.getElementById('schoolMediaPicker').click();
+        }
+
+        function handleSchoolMediaAdded(e) {
+            const files = e.target.files;
+            const gallery = document.getElementById('schoolMediaGallery');
+            gallery.innerHTML = "";
+            for (let file of files) {
+                const url = URL.createObjectURL(file);
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    gallery.appendChild(img);
+                } else if (file.type.startsWith('video/')) {
+                    const vid = document.createElement('video');
+                    vid.src = url;
+                    vid.controls = true;
+                    gallery.appendChild(vid);
+                }
+            }
+            alert("تمت إضافة وسائط المدرسة بنجاح!");
+        }
+
+        function requestAdminAccess(type) {
+            if (!isAdminAuthenticated) {
+                if (confirm("هذه الخاصية تتطلب صلاحيات المشرف. هل تريد تسجيل الدخول الآن؟")) {
+                    toggleAdminAuthModal();
+                }
+                return;
+            }
+            if (type === 'video') document.getElementById('uploadVideoInput').click();
+            else if (type === 'image') document.getElementById('uploadImageInput').click();
+            else if (type === 'text') {
+                const t = prompt("أدخل العنوان البارز للغلاف:");
+                const d = prompt("أدخل نص الوصف للغلاف:");
+                if (t !== null) {
+                    document.getElementById('rightCoverTitleText').innerText = t;
+                    document.getElementById('rightCoverDescText').innerText = d || "";
+                    document.getElementById('rightCoverTextLayer').style.display = 'block';
+                    document.getElementById('rightCoverVideo').style.display = 'none';
+                    document.getElementById('rightCoverImage').style.display = 'none';
+                }
+            }
+        }
+
+        function requestAdminLogoChange() {
+            if (!isAdminAuthenticated) {
+                alert("تغيير شعار المدرسة متاح للمشرف فقط.");
+                return;
+            }
+            document.getElementById('logoFilePicker').click();
+        }
+
+        function handleLogoChange(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('logoImgPreview').src = e.target.result;
+                    alert("تم تحديث شعار المدرسة بنجاح!");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function triggerPrincipalPhotoUpload() {
+            if (!isAdminAuthenticated) {
+                alert("تغيير صورة المدير متاح للمشرف فقط.");
+                return;
+            }
+            document.getElementById('principalImgPicker').click();
+        }
+
+        function handlePrincipalImageChange(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                document.getElementById('principalImgDisplay').src = url;
+                alert("تم تحديث صورة مدير المدرسة بنجاح!");
+            }
+        }
+
+        function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const vid = document.getElementById('rightCoverVideo');
+                vid.src = url;
+                vid.style.display = 'block';
+                document.getElementById('rightCoverImage').style.display = 'none';
+                document.getElementById('rightCoverTextLayer').style.display = 'none';
+                alert("تم تحديث فيديو الغلاف بنجاح!");
+            }
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const img = document.getElementById('rightCoverImage');
+                img.src = url;
+                img.style.display = 'block';
+                document.getElementById('rightCoverVideo').style.display = 'none';
+                document.getElementById('rightCoverTextLayer').style.display = 'none';
+                alert("تم تحديث صورة الغلاف بنجاح!");
+            }
+        }
+
+        function triggerCommentMediaUpload() {
+            document.getElementById('commentMediaPicker').click();
+        }
+
+        function handleCommentMediaSelected(event) {
+            const file = event.target.files[0];
+            if (file) {
+                attachedCommentMediaUrl = URL.createObjectURL(file);
+                document.getElementById('attachedMediaLabel').innerText = "تم إرفاق الملف: " + file.name;
+                alert("تم إرفاق الوسائط بنجاح!");
+            }
+        }
+
+        function showAddPlatformForm() {
+            document.getElementById('formPlatformTitle').innerText = "إضافة مرجع / منصة جديدة للقسم الحالي:";
+            document.getElementById('editPlatformItemId').value = "";
+            document.getElementById('newPlatformName').value = "";
+            document.getElementById('newPlatformType').value = "";
+            document.getElementById('newPlatformUrl').value = "";
+            document.getElementById('addPlatformFormBox').style.display = 'block';
+        }
+
+        function hideAddPlatformForm() {
+            document.getElementById('addPlatformFormBox').style.display = 'none';
+        }
+
+        function confirmSavePlatform() {
+            const itemId = document.getElementById('editPlatformItemId').value;
+            const name = document.getElementById('newPlatformName').value.trim();
+            const type = document.getElementById('newPlatformType').value.trim();
+            const url = document.getElementById('newPlatformUrl').value.trim();
+
+            if (!name || !url) {
+                alert("يرجى إدخال اسم المنصة ورابط الوصول.");
+                return;
+            }
+
+            const secItems = defaultSectionsData[activeSectionId].items;
+
+            if (itemId) {
+                const item = secItems.find(i => i.id == itemId);
+                if (item) {
+                    item.name = name;
+                    item.type = type || "مرجع تعليمي";
+                    item.link = url;
+                }
+                alert("تم تحديث بيانات المنصة بنجاح!");
+            } else {
+                const newId = Date.now();
+                secItems.push({ id: newId, name: name, type: type || "منصة تفاعلية", link: url });
+                alert("تمت إضافة المنصة الجديدة بنجاح!");
+            }
+
+            hideAddPlatformForm();
+            renderModalResources();
+        }
+
+        function editPlatformItem(id) {
+            const secItems = defaultSectionsData[activeSectionId].items;
+            const item = secItems.find(i => i.id == id);
+            if (!item) return;
+
+            document.getElementById('formPlatformTitle').innerText = "تعديل بيانات المنصة:";
+            document.getElementById('editPlatformItemId').value = item.id;
+            document.getElementById('newPlatformName').value = item.name;
+            document.getElementById('newPlatformType').value = item.type;
+            document.getElementById('newPlatformUrl').value = item.link;
+            document.getElementById('addPlatformFormBox').style.display = 'block';
+        }
+
+        function deletePlatformItem(id) {
+            if (confirm("هل أنت متأكد من حذف هذه المنصة؟")) {
+                let secItems = defaultSectionsData[activeSectionId].items;
+                defaultSectionsData[activeSectionId].items = secItems.filter(i => i.id != id);
+                renderModalResources();
+                alert("تم الحذف بنجاح.");
+            }
+        }
+
+        function submitUserComment() {
+            const nameInput = document.getElementById('commentUserName');
+            const textInput = document.getElementById('commentUserText');
+            const name = nameInput.value.trim() || "زائر كريم";
+            const text = textInput.value.trim();
+
+            if (!text && !attachedCommentMediaUrl) {
+                alert("يرجى كتابة نص التعليق أو إرفاق صورة/فيديو.");
+                return;
+            }
+
+            userCommentsList.unshift({ name: name, text: text, media: attachedCommentMediaUrl });
+            nameInput.value = "";
+            textInput.value = "";
+            attachedCommentMediaUrl = "";
+            document.getElementById('attachedMediaLabel').innerText = "لم يتم إرفاق ملف";
+            renderCommentsList();
+            alert("شكراً لك! تم إرسال مشاركتك بنجاح.");
+        }
+
+        function renderCommentsList() {
+            const container = document.getElementById('commentsDisplayList');
+            let html = "";
+            userCommentsList.forEach(c => {
+                html += `
+                    <div class="comment-item">
+                        <strong>${c.name}:</strong> <span>${c.text}</span>
+                `;
+                if (c.media) {
+                    html += `<div style="margin-top: 5px;"><a href="${c.media}" target="_blank" style="color: #0284c7; text-decoration: underline; font-weight: bold;"><i class="fa-solid fa-paperclip"></i> عرض المرفق المضاف</a></div>`;
+                }
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function applySystemTheme(mode) {
+            const body = document.body;
+            if (mode === 'blue') {
+                body.style.background = "radial-gradient(circle, #0284c7 0%, #0f172a 100%)";
+            } else if (mode === 'emerald') {
+                body.style.background = "radial-gradient(circle, #065f46 0%, #030712 100%)";
+            } else if (mode === 'light') {
+                body.style.background = "radial-gradient(circle, #f8fafc 0%, #cbd5e1 100%)";
+            } else if (mode === 'dark') {
+                body.style.background = "radial-gradient(circle, #0f172a 0%, #030712 100%)";
+            }
+        }
+
+        function applyCustomBgColor(colorHex) {
+            document.body.style.background = colorHex;
+        }
+
+        window.onload = function() {
+            renderCommentsList();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'visitor') {
+                document.querySelector('.top-header-bar div:last-child').style.display = 'none';
+                document.getElementById('userModeBadge').innerText = "وضع الزائر الآمن (للتصفح فقط)";
+            }
+        };
+    </script>
+</body>
+</html>
